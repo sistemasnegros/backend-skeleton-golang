@@ -15,7 +15,7 @@
 
 ---
 
-<p align="center"> Base Backend project implementing clean architecture DDD and Hexagonal with library Fx + Fiber + Gorm + Inversify + sqlite 
+<p align="center"> Base Backend project implementing clean architecture DDD and Hexagonal with library Fx + Fiber + Inversify  (Gorm + sqlite) or (MongoDB driver) 
     <br> 
 </p>
 
@@ -31,16 +31,15 @@
 
 ## 🧐 About <a name = "about"></a>
 
-This project serves as a skeleton for a scalable application with Vite + React, as it has a basic implementation of the following:
+This project serves as a skeleton for a scalable application with Golang, as it has a basic implementation of the following:
 
 - Dependency Injection
 - Validation DTO
 - Security (Json Web Token)
-- Handlers Error 
+- Handlers Error
 - Guards
 - Module Auth
 - Module Users
-
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 
@@ -49,6 +48,7 @@ This project serves as a skeleton for a scalable application with Vite + React, 
 ```
 go 1.20
 air
+MongoDB latest
 ```
 
 ### Installing
@@ -60,14 +60,20 @@ cd backend-skelenton-golang/src
 
 Once you've cloned the project, install dependencies with
 
-
 ```
 go mod download
 ```
 
 cloud Air - Live reload for Go apps
+
 ```
 go install github.com/cosmtrek/air@latest
+```
+
+Start MongoDB with docker-compose
+
+```
+docker-compose up --build -d
 ```
 
 ## 🎈 Usage <a name="usage"></a>
@@ -86,15 +92,13 @@ To create a production version of your app:
 go build
 ```
 
-You can preview the production build with `npm run preview`.
-
 ## ⛏️ Built Using <a name = "built_using"></a>
 
 - [Go](https://go.dev/) - Programming Language.
 - [Fx](https://www.typescriptlang.org/) - Fx is a dependency injection system for Go..
 - [Fiber](https://docs.gofiber.io/) - Fiber is an Express inspired web framework built on top of Fasthttp.
 - [Gorm](https://gorm.io) - The fantastic ORM library for Golang.
-
+- [MongoDB](https://gorm.io) - MongoDB Go Driver.
 
 ## ✍️ Authors <a name = "authors"></a>
 

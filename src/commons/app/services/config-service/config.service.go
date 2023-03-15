@@ -46,3 +46,7 @@ func GetSmtpPass() string {
 func GetSmtpFrom() string {
 	return configInfra.Get("SMTP_FROM")
 }
+
+func GetMongoDb() string {
+	return configInfra.Get("MONGO_DB")
+}

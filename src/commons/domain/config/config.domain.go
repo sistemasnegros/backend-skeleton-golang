@@ -6,9 +6,11 @@ type Config struct {
 	JWT_EXP    int
 	DB_CONFIG  string
 
-	SMTP_HOST  string
-	SMTP_PORT  int
-	SMTP_USER  string
-	SMTP_PASS  string
-	SMTP_FROM  string
+	SMTP_HOST string
+	SMTP_PORT int
+	SMTP_USER string
+	SMTP_PASS string
+	SMTP_FROM string
+
+	MONGO_DB string
 }

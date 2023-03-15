@@ -6,9 +6,10 @@ import (
 	msgDomain "backend-skeleton-golang/commons/domain/msg"
 	usersDTO "backend-skeleton-golang/users/app/dto"
 	usersDomain "backend-skeleton-golang/users/domain"
-	usersRepo "backend-skeleton-golang/users/infra/repo"
+	usersRepoMongo "backend-skeleton-golang/users/infra/mongodb/repo"
 
 	"github.com/jinzhu/copier"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type IService interface {
@@ -20,10 +21,10 @@ type IService interface {
 }
 
 type Service struct {
-	repo *usersRepo.Users
+	repo *usersRepoMongo.Users
 }
 
-func New(repo *usersRepo.Users) IService {
+func New(repo *usersRepoMongo.Users) IService {
 	return &Service{repo: repo}
 }
 
@@ -35,10 +36,18 @@ func (s *Service) Find() (int, interface{}) {
 		return resService.InternalServerError(msgDomain.Msg.ERR_SAVING_IN_DATABASE)
 	}
 
-	return resService.Ok(users)
+	var usersRes []usersDTO.UserRes
+	for _, user := range users {
+		userRes := usersDTO.UserRes{}
+		copier.Copy(&userRes, user)
+		usersRes = append(usersRes, userRes)
+	}
+
+	return resService.Ok(usersRes)
 }
 
 func (s *Service) Create(body *usersDTO.Create) (int, interface{}) {
+
 	userIdFound, _ := s.repo.FindById(body.Id)
 
 	if userIdFound.Id != "" {
@@ -52,6 +61,14 @@ func (s *Service) Create(body *usersDTO.Create) (int, interface{}) {
 		return resService.BadRequest(msgDomain.Msg.ERR_EMAIL_ALREADY_EXISTS)
 	}
 
+	bytes, err := bcrypt.GenerateFromPassword([]byte(body.Password), 14)
+
+	if err != nil {
+		logService.Error(err.Error())
+	}
+
+	body.Password = string(bytes)
+
 	userDomain := usersDomain.User{}
 
 	copier.Copy(&userDomain, &body)
@@ -63,7 +80,10 @@ func (s *Service) Create(body *usersDTO.Create) (int, interface{}) {
 		return resService.InternalServerError(msgDomain.Msg.ERR_SAVING_IN_DATABASE)
 	}
 
-	return resService.Created(user)
+	userRes := usersDTO.UserRes{}
+	copier.Copy(&userRes, user)
+
+	return resService.Created(userRes)
 }
 
 func (s *Service) UpdateById(id string, body *usersDTO.Update) (int, interface{}) {
@@ -82,6 +102,11 @@ func (s *Service) UpdateById(id string, body *usersDTO.Update) (int, interface{}
 		return resService.BadRequest(msgDomain.Msg.ERR_EMAIL_ALREADY_EXISTS)
 	}
 
+	if body.Password != "" {
+		bytes, _ := bcrypt.GenerateFromPassword([]byte(body.Password), 14)
+		body.Password = string(bytes)
+	}
+
 	userDomain := usersDomain.User{}
 
 	copier.Copy(&userDomain, &body)
@@ -93,7 +118,10 @@ func (s *Service) UpdateById(id string, body *usersDTO.Update) (int, interface{}
 		return resService.InternalServerError(msgDomain.Msg.ERR_SAVING_IN_DATABASE)
 	}
 
-	return resService.Ok(user)
+	userRes := usersDTO.UserRes{}
+	copier.Copy(&userRes, user)
+
+	return resService.Ok(userRes)
 }
 
 func (s *Service) DeleteById(id string) (int, interface{}) {
@@ -110,7 +138,7 @@ func (s *Service) DeleteById(id string) (int, interface{}) {
 	s.repo.DeleteById(id)
 
 	userRes := usersDTO.UserRes{}
-	copier.Copy(&userRes, &user)
+	copier.Copy(&userRes, user)
 
 	return resService.Ok(userRes)
 }
@@ -127,7 +155,7 @@ func (s *Service) FindById(id string) (int, interface{}) {
 	}
 
 	userRes := usersDTO.UserRes{}
-	copier.Copy(&userRes, &user)
+	copier.Copy(&userRes, user)
 
 	return resService.Ok(userRes)
 }

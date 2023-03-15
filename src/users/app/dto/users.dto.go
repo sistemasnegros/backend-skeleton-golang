@@ -1,7 +1,5 @@
 package usersDTO
 
-import usersDomain "backend-skeleton-golang/users/domain"
-
 type UserRes struct {
 	Id        string `json:"id"`
 	Email     string `json:"email" `
@@ -10,7 +8,11 @@ type UserRes struct {
 }
 
 type Create struct {
-	usersDomain.User
+	Id        string `json:"id" validate:"required,objectId" `
+	Email     string `json:"email" validate:"required,email"`
+	Password  string `json:"password" validate:"required"`
+	FirstName string `json:"firstName" validate:"required"`
+	LastName  string `json:"lastName" validate:"required"`
 }
 
 type Update struct {

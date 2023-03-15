@@ -1,6 +1,9 @@
 package utilsFiberInfra
 
-import "github.com/go-playground/validator/v10"
+import (
+	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type ErrorResponse struct {
 	FailedField string `json:"failedField"`
@@ -10,6 +13,8 @@ type ErrorResponse struct {
 
 func ValidateStruct(body interface{}) []*ErrorResponse {
 	var validate = validator.New()
+
+	validate.RegisterValidation("objectId", ObjectId)
 	var errors []*ErrorResponse
 	err := validate.Struct(body)
 	if err != nil {
@@ -22,4 +27,9 @@ func ValidateStruct(body interface{}) []*ErrorResponse {
 		}
 	}
 	return errors
+}
+
+// ValidateValuer implements validator.CustomTypeFunc
+func ObjectId(fl validator.FieldLevel) bool {
+	return primitive.IsValidObjectID(fl.Field().String())
 }

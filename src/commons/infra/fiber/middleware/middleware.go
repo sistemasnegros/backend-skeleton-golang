@@ -2,19 +2,18 @@ package middlewareInfra
 
 import (
 	configService "backend-skeleton-golang/commons/app/services/config-service"
-	usersRepo "backend-skeleton-golang/users/infra/repo"
+	usersRepoMongo "backend-skeleton-golang/users/infra/mongodb/repo"
 
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/golang-jwt/jwt/v4"
 )
 
-
 type HandlerMiddleware struct {
-	repo *usersRepo.Users
+	repo *usersRepoMongo.Users
 }
 
-func New(repo *usersRepo.Users) *HandlerMiddleware {
+func New(repo *usersRepoMongo.Users) *HandlerMiddleware {
 
 	return &HandlerMiddleware{repo: repo}
 }

@@ -9,11 +9,11 @@ import (
 	middlewareInfra "backend-skeleton-golang/commons/infra/fiber/middleware"
 	godotenvInfra "backend-skeleton-golang/commons/infra/godotenv"
 	gomailInfra "backend-skeleton-golang/commons/infra/gomail"
-	gormInfra "backend-skeleton-golang/commons/infra/gorm"
 	logrusInfra "backend-skeleton-golang/commons/infra/logrus"
+	mongodbInfra "backend-skeleton-golang/commons/infra/mongodb"
 	usersService "backend-skeleton-golang/users/app/services"
 	usersController "backend-skeleton-golang/users/infra/controllers"
-	usersRepo "backend-skeleton-golang/users/infra/repo"
+	usersRepoMongo "backend-skeleton-golang/users/infra/mongodb/repo"
 	"context"
 
 	"go.uber.org/fx"
@@ -27,8 +27,9 @@ func main() {
 
 	app := fx.New(fx.Provide(
 
-		gormInfra.New,
-		usersRepo.New,
+		mongodbInfra.New,
+
+		usersRepoMongo.New,
 
 		gomailInfra.New,
 		smtpService.New,

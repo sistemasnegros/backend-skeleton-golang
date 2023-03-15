@@ -2,7 +2,7 @@ package gormInfra
 
 import (
 	configService "backend-skeleton-golang/commons/app/services/config-service"
-	usersModel "backend-skeleton-golang/users/infra/models"
+	usersModel "backend-skeleton-golang/users/infra/gorm/models"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

@@ -6,9 +6,10 @@ import (
 	resService "backend-skeleton-golang/commons/app/services/http-service"
 	logService "backend-skeleton-golang/commons/app/services/log-service"
 	smtpService "backend-skeleton-golang/commons/app/services/smtp-service"
+	msgDomain "backend-skeleton-golang/commons/domain/msg"
 	smtpDomain "backend-skeleton-golang/commons/domain/smtp"
 	usersDomain "backend-skeleton-golang/users/domain"
-	usersRepo "backend-skeleton-golang/users/infra/repo"
+	usersRepoMongodb "backend-skeleton-golang/users/infra/mongodb/repo"
 	"fmt"
 	"time"
 
@@ -23,11 +24,14 @@ type IService interface {
 }
 
 type Service struct {
-	repo *usersRepo.Users
 	smtp smtpService.ISmtpService
+	repo *usersRepoMongodb.Users
 }
 
-func New(repo *usersRepo.Users, smtp smtpService.ISmtpService) *Service {
+func New(
+	smtp smtpService.ISmtpService,
+	repo *usersRepoMongodb.Users,
+) *Service {
 	return &Service{repo: repo, smtp: smtp}
 }
 
@@ -35,17 +39,25 @@ func (s *Service) Register(body *authDTO.Register) (int, interface{}) {
 	userIdFound, _ := s.repo.FindById(body.Id)
 
 	if userIdFound.Id != "" {
-		return resService.BadRequest("id already exists")
+		return resService.BadRequest(msgDomain.Msg.ERR_ID_ALREADY_EXISTS)
 	}
 
 	querySearchUser := map[string]interface{}{"email": body.Email}
 	userEmailFound, err := s.repo.FindOne(querySearchUser)
 
 	if userEmailFound.Id != "" {
-		return resService.BadRequest("email already exists")
+		return resService.BadRequest(msgDomain.Msg.ERR_EMAIL_ALREADY_EXISTS)
 	}
 
 	userDomain := usersDomain.User{}
+
+	bytes, err := bcrypt.GenerateFromPassword([]byte(body.Password), 14)
+
+	if err != nil {
+		logService.Error(err.Error())
+	}
+
+	body.Password = string(bytes)
 
 	copier.Copy(&userDomain, &body)
 
@@ -53,7 +65,7 @@ func (s *Service) Register(body *authDTO.Register) (int, interface{}) {
 
 	if err != nil {
 		logService.Error(err.Error())
-		return resService.InternalServerError("err unknown")
+		return resService.InternalServerError(msgDomain.Msg.ERR_SAVING_IN_DATABASE)
 	}
 
 	return resService.Created(user)
@@ -65,13 +77,14 @@ func (s *Service) Login(body *authDTO.Login) (int, interface{}) {
 	user, err := s.repo.FindOne(querySearchUser)
 
 	if user.Id == "" {
-		return resService.Unauthorized("user or password not found")
+		return resService.Unauthorized(msgDomain.Msg.ERR_EMAIL_OR_PASSWORD_INVALID)
 	}
 
 	errPassword := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
 
 	if errPassword != nil {
-		return resService.Unauthorized("user or password not found")
+		logService.Error(errPassword.Error())
+		return resService.Unauthorized(msgDomain.Msg.ERR_EMAIL_OR_PASSWORD_INVALID)
 	}
 
 	token := jwt.New(jwt.SigningMethodHS256)
@@ -79,12 +92,12 @@ func (s *Service) Login(body *authDTO.Login) (int, interface{}) {
 	claims := token.Claims.(jwt.MapClaims)
 	claims["id"] = user.Id
 	claims["email"] = user.Email
-	claims["exp"] = time.Now().Add(time.Minute * time.Duration(configService.GetJwtExt())).Unix()
+	claims["exp"] = time.Now().Add(time.Hour * time.Duration(configService.GetJwtExt())).Unix()
 
 	tokenSingned, err := token.SignedString([]byte(configService.GetJwtSecret()))
 	if err != nil {
 		logService.Error(err.Error())
-		return resService.InternalServerError("error singing token")
+		return resService.InternalServerError(msgDomain.Msg.ERR_INTERNAL_SERVER)
 	}
 
 	userRes := authDTO.LoginResUser{}
@@ -104,7 +117,8 @@ func (s *Service) ForgotPassword(body *authDTO.ForgotPassword) (int, interface{}
 	user, err := s.repo.FindOne(querySearchUser)
 
 	if user.Id == "" {
-		return resService.Ok("password reset email was successfully sent")
+		// avoid revelate information intruses
+		return resService.Ok(msgDomain.Msg.SUCCESS_REQUEST_RESTORE_PASSWORD)
 	}
 
 	token := jwt.New(jwt.SigningMethodHS256)
@@ -116,7 +130,7 @@ func (s *Service) ForgotPassword(body *authDTO.ForgotPassword) (int, interface{}
 	tokenSingned, err := token.SignedString([]byte(configService.GetJwtSecret()))
 	if err != nil {
 		logService.Error(err.Error())
-		return resService.InternalServerError("error singing token")
+		return resService.InternalServerError(msgDomain.Msg.ERR_INTERNAL_SERVER)
 	}
 
 	email := smtpDomain.SendArgs{
@@ -135,10 +149,10 @@ func (s *Service) ForgotPassword(body *authDTO.ForgotPassword) (int, interface{}
 	errSmtp := s.smtp.Send(email)
 
 	if errSmtp != nil {
-		resService.InternalServerError("error in smtp server")
+		resService.InternalServerError(msgDomain.Msg.ERR_SMTP_SERVER)
 	}
 
-	return resService.Ok("password reset email was successfully sent")
+	return resService.Ok(msgDomain.Msg.SUCCESS_REQUEST_RESTORE_PASSWORD)
 }
 
 func (s *Service) RestorePassword(tokenString string, body *authDTO.RestorePassword) (int, interface{}) {
@@ -159,20 +173,28 @@ func (s *Service) RestorePassword(tokenString string, body *authDTO.RestorePassw
 
 	if err != nil {
 		logService.Error(err.Error())
-		return resService.BadRequest("invalid token")
+		return resService.BadRequest(msgDomain.Msg.ERR_TOKEN_INVALID)
 	}
 
 	if !token.Valid {
-		return resService.BadRequest("invalid token")
+		return resService.BadRequest(msgDomain.Msg.ERR_TOKEN_INVALID)
 	}
 
 	user, err := s.repo.FindById(tokenDecoded.Id)
 
 	if user.Id == "" {
-		return resService.BadRequest("invalid token")
+		return resService.BadRequest(msgDomain.Msg.ERR_TOKEN_INVALID)
 	}
+
+	bytes, err := bcrypt.GenerateFromPassword([]byte(body.Password), 14)
+
+	if err != nil {
+		logService.Error(err.Error())
+	}
+
+	body.Password = string(bytes)
 
 	s.repo.UpdateById(tokenDecoded.Id, &usersDomain.User{Password: body.Password})
 
-	return resService.Ok("password updated successfully")
+	return resService.Ok(msgDomain.Msg.SUCCESS_PASSWORD_UPDATED)
 }

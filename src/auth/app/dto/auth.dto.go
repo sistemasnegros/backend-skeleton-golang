@@ -33,3 +33,10 @@ type RestorePassword struct {
 	Password        string `json:"password" validate:"required"`
 	ConfirmPassword string `json:"confirmPassword" validate:"required,eqfield=Password"`
 }
+
+type UpdateMe struct {
+	Email     string `json:"email" validate:"email"`
+	Password  string `json:"password"  `
+	FirstName string `json:"firstName" `
+	LastName  string `json:"lastName" `
+}

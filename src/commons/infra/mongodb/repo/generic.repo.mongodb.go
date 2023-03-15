@@ -126,7 +126,6 @@ func (g *Generic[T, D]) Create(data D) (D, error) {
 
 	_, err := g.DB.InsertOne(context.TODO(), &model)
 
-	fmt.Printf("%+v \n", model)
 
 	if err != nil {
 		logService.Error(err.Error())
@@ -152,6 +151,10 @@ func (g *Generic[T, D]) UpdateById(id string, data interface{}) (*D, error) {
 		value := dataReflect.Field(i).Interface()
 
 		if field == "id" {
+			continue
+		}
+
+		if value == "" {
 			continue
 		}
 
@@ -193,7 +196,6 @@ func (g *Generic[T, D]) FindWithNot(queryNot map[string]interface{}, query map[s
 		queryBson = append(queryBson, bson.E{Key: k, Value: bson.D{{Key: "$ne", Value: v}}})
 	}
 
-	// fmt.Printf("%+v\n", queryBson)
 
 	err := g.DB.FindOne(context.TODO(), queryBson).Decode(&model)
 
@@ -220,8 +222,6 @@ func (g *Generic[T, D]) DeleteById(id string) error {
 		context.TODO(),
 		filter,
 	)
-
-	// fmt.Printf("%+v\n", res)
 
 	if err != nil {
 		logService.Error(err.Error())

@@ -8,6 +8,7 @@ import (
 	smtpService "backend-skeleton-golang/commons/app/services/smtp-service"
 	msgDomain "backend-skeleton-golang/commons/domain/msg"
 	smtpDomain "backend-skeleton-golang/commons/domain/smtp"
+	usersDTO "backend-skeleton-golang/users/app/dto"
 	usersDomain "backend-skeleton-golang/users/domain"
 	usersRepoMongodb "backend-skeleton-golang/users/infra/mongodb/repo"
 	"fmt"
@@ -197,4 +198,46 @@ func (s *Service) RestorePassword(tokenString string, body *authDTO.RestorePassw
 	s.repo.UpdateById(tokenDecoded.Id, &usersDomain.User{Password: body.Password})
 
 	return resService.Ok(msgDomain.Msg.SUCCESS_PASSWORD_UPDATED)
+}
+
+func (s *Service) GetMe(id string) (int, interface{}) {
+	userDomain, _ := s.repo.FindById(id)
+	userRes := usersDTO.UserRes{}
+	copier.Copy(&userRes, userDomain)
+
+	return resService.Ok(userRes)
+}
+
+func (s *Service) UpdateMe(id string, body *authDTO.UpdateMe) (int, interface{}) {
+
+	queryNotId := map[string]interface{}{"id": id}
+	queryEmail := map[string]interface{}{"email": body.Email}
+
+	userEmailFound, _ := s.repo.FindWithNot(queryNotId, queryEmail)
+
+	if userEmailFound.Email != "" {
+		return resService.BadRequest(msgDomain.Msg.ERR_EMAIL_ALREADY_EXISTS)
+	}
+
+	if body.Password != "" {
+		bytes, _ := bcrypt.GenerateFromPassword([]byte(body.Password), 14)
+		body.Password = string(bytes)
+	}
+
+	userDomain := usersDomain.User{}
+
+	copier.Copy(&userDomain, &body)
+
+	user, err := s.repo.UpdateById(id, userDomain)
+
+	if err != nil {
+		logService.Error(err.Error())
+		return resService.InternalServerError(msgDomain.Msg.ERR_SAVING_IN_DATABASE)
+	}
+
+	userRes := usersDTO.UserRes{}
+	copier.Copy(&userRes, user)
+
+	return resService.Ok(userRes)
+
 }

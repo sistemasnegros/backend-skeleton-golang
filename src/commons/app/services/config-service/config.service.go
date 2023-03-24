@@ -50,3 +50,23 @@ func GetSmtpFrom() string {
 func GetMongoDb() string {
 	return configInfra.Get("MONGO_DB")
 }
+
+type S3Config struct {
+	AWS_SECRET_ACCESS_KEY string
+	AWS_ACCESS_KEY_ID     string
+	AWS_BUCKET            string
+	AWS_REGION            string
+	AWS_ENDPOINT          string
+	AWS_URL_PUBLIC        string
+}
+
+func GetS3() *S3Config {
+	return &S3Config{
+		AWS_ACCESS_KEY_ID:     configInfra.Get("AWS_ACCESS_KEY_ID"),
+		AWS_SECRET_ACCESS_KEY: configInfra.Get("AWS_SECRET_ACCESS_KEY"),
+		AWS_BUCKET:            configInfra.Get("AWS_BUCKET"),
+		AWS_REGION:            configInfra.Get("AWS_REGION"),
+		AWS_ENDPOINT:          configInfra.Get("AWS_ENDPOINT"),
+		AWS_URL_PUBLIC:        configInfra.Get("AWS_URL_PUBLIC"),
+	}
+}

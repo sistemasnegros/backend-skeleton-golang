@@ -35,6 +35,7 @@ func (controller Controller) LoadRouter(router fiber.Router) {
 
 	auth.Get("/me", controller.middleware.Protected(), controller.GetMe)
 	auth.Patch("/me", controller.middleware.Protected(), controller.UpdateMe)
+
 }
 
 func (controller Controller) Register(c *fiber.Ctx) error {
@@ -132,3 +133,4 @@ func (controller Controller) UpdateMe(c *fiber.Ctx) error {
 
 	return c.Status(code).JSON(res)
 }
+

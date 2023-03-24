@@ -11,6 +11,9 @@ import (
 	gomailInfra "backend-skeleton-golang/commons/infra/gomail"
 	logrusInfra "backend-skeleton-golang/commons/infra/logrus"
 	mongodbInfra "backend-skeleton-golang/commons/infra/mongodb"
+	s3Infra "backend-skeleton-golang/commons/infra/s3"
+	filesService "backend-skeleton-golang/files/app/services"
+	filesRepo "backend-skeleton-golang/files/infra/s3"
 	usersService "backend-skeleton-golang/users/app/services"
 	usersController "backend-skeleton-golang/users/infra/controllers"
 	usersRepoMongo "backend-skeleton-golang/users/infra/mongodb/repo"
@@ -24,26 +27,34 @@ func main() {
 	godotenvInfra.Load()
 	logrusInfra.Init()
 	msgDomain.New()
+	// s3Infra.New()
 
-	app := fx.New(fx.Provide(
+	app := fx.New(
+		fx.NopLogger,
 
-		mongodbInfra.New,
+		fx.Provide(
 
-		usersRepoMongo.New,
+			s3Infra.New,
+			mongodbInfra.New,
 
-		gomailInfra.New,
-		smtpService.New,
+			usersRepoMongo.New,
 
-		middlewareInfra.New,
+			gomailInfra.New,
+			smtpService.New,
 
-		authService.New,
-		authControllers.New,
+			middlewareInfra.New,
 
-		usersController.New,
-		usersService.New,
+			filesRepo.New,
+			filesService.New,
 
-		fiberInfra.New,
-	),
+			authService.New,
+			authControllers.New,
+
+			usersController.New,
+			usersService.New,
+
+			fiberInfra.New,
+		),
 		fx.Invoke(
 			start,
 		),

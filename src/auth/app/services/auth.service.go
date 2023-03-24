@@ -8,6 +8,7 @@ import (
 	smtpService "backend-skeleton-golang/commons/app/services/smtp-service"
 	msgDomain "backend-skeleton-golang/commons/domain/msg"
 	smtpDomain "backend-skeleton-golang/commons/domain/smtp"
+	filesService "backend-skeleton-golang/files/app/services"
 	usersDTO "backend-skeleton-golang/users/app/dto"
 	usersDomain "backend-skeleton-golang/users/domain"
 	usersRepoMongodb "backend-skeleton-golang/users/infra/mongodb/repo"
@@ -27,13 +28,16 @@ type IService interface {
 type Service struct {
 	smtp smtpService.ISmtpService
 	repo *usersRepoMongodb.Users
+	file *filesService.FilesService
 }
 
 func New(
 	smtp smtpService.ISmtpService,
 	repo *usersRepoMongodb.Users,
+	file *filesService.FilesService,
+
 ) *Service {
-	return &Service{repo: repo, smtp: smtp}
+	return &Service{repo: repo, smtp: smtp, file: file}
 }
 
 func (s *Service) Register(body *authDTO.Register) (int, interface{}) {
@@ -241,3 +245,4 @@ func (s *Service) UpdateMe(id string, body *authDTO.UpdateMe) (int, interface{})
 	return resService.Ok(userRes)
 
 }
+

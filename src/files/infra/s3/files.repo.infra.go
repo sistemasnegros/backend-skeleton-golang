@@ -34,15 +34,14 @@ func (r *S3Repository) List() ([]*filesDomain.FileRes, error) {
 		Bucket: aws.String(r.Bucket),
 	})
 
-	// files := []*filesDomain.FileRes{}
-	files := make([]*filesDomain.FileRes, len(res.Contents))
+	files := []*filesDomain.FileRes{}
 
 	if err != nil {
 		logService.Error(err.Error())
 		return files, err
 	}
 
-	for index, object := range res.Contents {
+	for _, object := range res.Contents {
 		key := aws.ToString(object.Key)
 		paths := strings.Split(key, "/")
 		name := paths[len(paths)-1]
@@ -52,7 +51,7 @@ func (r *S3Repository) List() ([]*filesDomain.FileRes, error) {
 			Url:  fmt.Sprintf("%s/%s", r.Url, key),
 		}
 
-		files[index] = file
+    files = append(files, file)
 
 	}
 

@@ -10,10 +10,10 @@ import (
 )
 
 type HandlerMiddleware struct {
-	repo *usersRepoMongo.Users
+	repo usersRepoMongo.IUsers
 }
 
-func New(repo *usersRepoMongo.Users) *HandlerMiddleware {
+func New(repo usersRepoMongo.IUsers) *HandlerMiddleware {
 
 	return &HandlerMiddleware{repo: repo}
 }

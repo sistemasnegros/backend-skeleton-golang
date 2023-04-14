@@ -18,11 +18,11 @@ type IController interface {
 }
 
 type Controller struct {
-	service    *authService.Service
+	service    authService.IService
 	middleware *middlewareInfra.HandlerMiddleware
 }
 
-func New(service *authService.Service, middleware *middlewareInfra.HandlerMiddleware) IController {
+func New(service authService.IService, middleware *middlewareInfra.HandlerMiddleware) IController {
 	return &Controller{service: service, middleware: middleware}
 }
 
@@ -133,4 +133,3 @@ func (controller Controller) UpdateMe(c *fiber.Ctx) error {
 
 	return c.Status(code).JSON(res)
 }
-

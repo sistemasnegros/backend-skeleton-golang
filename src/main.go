@@ -29,7 +29,7 @@ func main() {
 	msgDomain.New()
 
 	app := fx.New(
-		fx.NopLogger,
+		// fx.NopLogger,
 
 		fx.Provide(
 

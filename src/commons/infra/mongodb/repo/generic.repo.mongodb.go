@@ -16,6 +16,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type IGeneric[T interface{}, D interface{}] interface {
+	Find(query interface{}) ([]D, error)
+	FindById(id string) (*D, error)
+	FindOne(query interface{}) (*D, error)
+	FindPagination(query interface{}, limit int64, page int) (*serviceDomain.PaginationData[D], error)
+	UpdateById(id string, data interface{}) (*D, error)
+	Create(D) (D, error)
+	FindWithNot(queryNot map[string]interface{}, query map[string]interface{}) (*D, error)
+	DeleteById(id string) error
+}
+
 type Generic[T interface{}, D interface{}] struct {
 	DB *mongo.Collection
 }

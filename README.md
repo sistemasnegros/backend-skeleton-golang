@@ -84,6 +84,20 @@ docker-compose up --build -d
 air
 ```
 
+### Testing
+
+Generate mocks
+
+```
+mockery --output=test/mocks/ --outpkg=mocks --all --keeptree
+```
+
+Run test
+
+```
+go test -v ./... -cover
+```
+
 ## 🚀 Deployment <a name = "deployment"></a>
 
 To create a production version of your app:
@@ -108,3 +122,4 @@ go build
 
 - thanks to video [Fazt Code Fiber](https://youtu.be/8ES_ecfbZsk) - [Fazt Code Gorm](https://youtu.be/B6gQ1B0cn4s)
 - thanks to video [Go Simplified](https://youtu.be/-XcyraChDUw)
+- thanks to video [Thomas Langhorst](https://www.youtube.com/watch?v=A1eR7TxeGcE)

@@ -8,7 +8,6 @@ import (
 	smtpService "backend-skeleton-golang/commons/app/services/smtp-service"
 	msgDomain "backend-skeleton-golang/commons/domain/msg"
 	smtpDomain "backend-skeleton-golang/commons/domain/smtp"
-	filesService "backend-skeleton-golang/files/app/services"
 	usersDTO "backend-skeleton-golang/users/app/dto"
 	usersDomain "backend-skeleton-golang/users/domain"
 	usersRepoMongodb "backend-skeleton-golang/users/infra/mongodb/repo"
@@ -23,21 +22,23 @@ import (
 type IService interface {
 	Register(body *authDTO.Register) (int, interface{})
 	Login(body *authDTO.Login) (int, interface{})
+	UpdateMe(id string, body *authDTO.UpdateMe) (int, interface{})
+	GetMe(id string) (int, interface{})
+	ForgotPassword(body *authDTO.ForgotPassword) (int, interface{})
+	RestorePassword(tokenString string, body *authDTO.RestorePassword) (int, interface{})
 }
 
 type Service struct {
 	smtp smtpService.ISmtpService
-	repo *usersRepoMongodb.Users
-	file *filesService.FilesService
+	repo usersRepoMongodb.IUsers
 }
 
 func New(
 	smtp smtpService.ISmtpService,
-	repo *usersRepoMongodb.Users,
-	file *filesService.FilesService,
+	repo usersRepoMongodb.IUsers,
 
-) *Service {
-	return &Service{repo: repo, smtp: smtp, file: file}
+) IService {
+	return &Service{repo: repo, smtp: smtp}
 }
 
 func (s *Service) Register(body *authDTO.Register) (int, interface{}) {
@@ -104,7 +105,7 @@ func (s *Service) Login(body *authDTO.Login) (int, interface{}) {
 		logService.Error(err.Error())
 		return resService.InternalServerError(msgDomain.Msg.ERR_INTERNAL_SERVER)
 	}
-
+	fmt.Println(configService.GetJwtExt())
 	userRes := authDTO.LoginResUser{}
 	copier.Copy(&userRes, &user)
 
@@ -245,4 +246,3 @@ func (s *Service) UpdateMe(id string, body *authDTO.UpdateMe) (int, interface{})
 	return resService.Ok(userRes)
 
 }
-

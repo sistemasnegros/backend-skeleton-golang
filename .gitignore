@@ -2,3 +2,7 @@
 /db/
 .env
 backend.db
+
+
+test/mocks
+!test/mocks/.gitkeep

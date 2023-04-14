@@ -46,6 +46,6 @@ func (suite *AuthServiceTestSuite) TestLoginIvalid() {
 	suite.Equal(code, 401)
 }
 
-func TestExampleTestSuite(t *testing.T) {
+func TestAuthServiceSuite(t *testing.T) {
 	suite.Run(t, new(AuthServiceTestSuite))
 }

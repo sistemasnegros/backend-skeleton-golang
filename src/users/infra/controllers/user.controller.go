@@ -2,6 +2,7 @@ package usersController
 
 import (
 	logService "backend-skeleton-golang/commons/app/services/log-service"
+	serviceDomain "backend-skeleton-golang/commons/domain/service"
 	middlewareInfra "backend-skeleton-golang/commons/infra/fiber/middleware"
 	utilsFiberInfra "backend-skeleton-golang/commons/infra/fiber/utils"
 	usersDTO "backend-skeleton-golang/users/app/dto"
@@ -39,7 +40,11 @@ func (controller Controller) LoadRouter(router fiber.Router) {
 }
 
 func (controller Controller) Find(c *fiber.Ctx) error {
-	code, res := controller.service.Find()
+	paginationOpts := &serviceDomain.PaginationOpts{
+		Page: c.QueryInt("page", 1),
+	}
+
+	code, res := controller.service.Find(paginationOpts)
 	return c.Status(code).JSON(res)
 }
 

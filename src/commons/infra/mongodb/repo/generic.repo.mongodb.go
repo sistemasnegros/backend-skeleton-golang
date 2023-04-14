@@ -2,8 +2,10 @@ package genericRepoMongodb
 
 import (
 	logService "backend-skeleton-golang/commons/app/services/log-service"
+	serviceDomain "backend-skeleton-golang/commons/domain/service"
 	"context"
 	"fmt"
+	"math"
 	"reflect"
 	"time"
 
@@ -112,6 +114,51 @@ func (g *Generic[T, D]) Find(query interface{}) ([]D, error) {
 	return resultsDomain, err
 }
 
+func (g *Generic[T, D]) FindPagination(query interface{}, limit int64, page int) (*serviceDomain.PaginationData[D], error) {
+
+	models := []T{}
+	opts := options.Count().SetHint("_id_")
+	count, err := g.DB.CountDocuments(context.TODO(), query, opts)
+
+	pages := int(math.Ceil(float64(count) / float64(limit)))
+
+	skip := limit * int64((page - 1))
+
+	optsFind := options.Find().SetSkip(skip).SetLimit(limit)
+	cursor, err := g.DB.Find(context.TODO(), query, optsFind)
+
+	if err != nil {
+		logService.Error(err.Error())
+		panic(err)
+	}
+
+	err = cursor.All(context.TODO(), &models)
+
+	if err != nil {
+		logService.Error(err.Error())
+		panic(err)
+	}
+	var resultsDomain []D
+
+	for _, result := range models {
+		dataDomain := new(D)
+		copier.Copy(&dataDomain, result)
+		ObjectIdToString(dataDomain, result)
+
+		resultsDomain = append(resultsDomain, *dataDomain)
+
+	}
+
+	paginationData := &serviceDomain.PaginationData[D]{
+		Pages:   pages,
+		Page:    page,
+		Data:    resultsDomain,
+		Records: int(count),
+	}
+
+	return paginationData, err
+}
+
 func (g *Generic[T, D]) Create(data D) (D, error) {
 	model := new(T)
 
@@ -125,7 +172,6 @@ func (g *Generic[T, D]) Create(data D) (D, error) {
 	reflect.ValueOf(model).Elem().FieldByName("UpdatedAt").Set(reflect.ValueOf(time.Now()))
 
 	_, err := g.DB.InsertOne(context.TODO(), &model)
-
 
 	if err != nil {
 		logService.Error(err.Error())
@@ -195,7 +241,6 @@ func (g *Generic[T, D]) FindWithNot(queryNot map[string]interface{}, query map[s
 
 		queryBson = append(queryBson, bson.E{Key: k, Value: bson.D{{Key: "$ne", Value: v}}})
 	}
-
 
 	err := g.DB.FindOne(context.TODO(), queryBson).Decode(&model)
 

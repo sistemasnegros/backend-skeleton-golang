@@ -27,7 +27,6 @@ func main() {
 	godotenvInfra.Load()
 	logrusInfra.Init()
 	msgDomain.New()
-	// s3Infra.New()
 
 	app := fx.New(
 		fx.NopLogger,

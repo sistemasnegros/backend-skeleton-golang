@@ -16,7 +16,6 @@ func New(repo *s3InfraRepo.S3Repository) *FilesService {
 func (s *FilesService) Upload(file filesDomain.File) (*filesDomain.FileRes, error) {
 	res, err := s.repo.Upload(file)
 	return res, err
-
 }
 
 func (s FilesService) List() ([]*filesDomain.FileRes, error) {

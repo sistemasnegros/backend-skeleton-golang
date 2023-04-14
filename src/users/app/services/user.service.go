@@ -4,6 +4,7 @@ import (
 	resService "backend-skeleton-golang/commons/app/services/http-service"
 	logService "backend-skeleton-golang/commons/app/services/log-service"
 	msgDomain "backend-skeleton-golang/commons/domain/msg"
+	serviceDomain "backend-skeleton-golang/commons/domain/service"
 	usersDTO "backend-skeleton-golang/users/app/dto"
 	usersDomain "backend-skeleton-golang/users/domain"
 	usersRepoMongo "backend-skeleton-golang/users/infra/mongodb/repo"
@@ -14,7 +15,7 @@ import (
 
 type IService interface {
 	Create(body *usersDTO.Create) (int, interface{})
-	Find() (int, interface{})
+	Find(*serviceDomain.PaginationOpts) (int, interface{})
 	DeleteById(id string) (int, interface{})
 	FindById(id string) (int, interface{})
 	UpdateById(id string, body *usersDTO.Update) (int, interface{})
@@ -28,22 +29,31 @@ func New(repo *usersRepoMongo.Users) IService {
 	return &Service{repo: repo}
 }
 
-func (s *Service) Find() (int, interface{}) {
+func (s *Service) Find(paginationOpts *serviceDomain.PaginationOpts) (int, interface{}) {
 	query := map[string]interface{}{}
-	users, err := s.repo.Find(query)
+	// users, err := s.repo.Find(query)
+
+	users, err := s.repo.FindPagination(query, 10, paginationOpts.Page)
 
 	if err != nil {
 		return resService.InternalServerError(msgDomain.Msg.ERR_SAVING_IN_DATABASE)
 	}
 
 	var usersRes []usersDTO.UserRes
-	for _, user := range users {
+	for _, user := range users.Data {
 		userRes := usersDTO.UserRes{}
 		copier.Copy(&userRes, user)
 		usersRes = append(usersRes, userRes)
 	}
 
-	return resService.Ok(usersRes)
+	paginationData := &serviceDomain.PaginationData[usersDTO.UserRes]{
+		Pages:   users.Pages,
+		Page:    users.Page,
+		Data:    usersRes,
+		Records: users.Records,
+	}
+
+	return resService.Ok(paginationData)
 }
 
 func (s *Service) Create(body *usersDTO.Create) (int, interface{}) {

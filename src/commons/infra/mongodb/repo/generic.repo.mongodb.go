@@ -102,14 +102,14 @@ func (g *Generic[T, D]) Find(query interface{}) ([]D, error) {
 
 	if err != nil {
 		logService.Error(err.Error())
-		panic(err)
+		return nil, err
 	}
 
 	err = cursor.All(context.TODO(), &models)
 
 	if err != nil {
 		logService.Error(err.Error())
-		panic(err)
+		return nil, err
 	}
 	var resultsDomain []D
 
@@ -126,7 +126,6 @@ func (g *Generic[T, D]) Find(query interface{}) ([]D, error) {
 }
 
 func (g *Generic[T, D]) FindPagination(query interface{}, limit int64, page int) (*serviceDomain.PaginationData[D], error) {
-
 	models := []T{}
 	opts := options.Count().SetHint("_id_")
 	count, err := g.DB.CountDocuments(context.TODO(), query, opts)
@@ -140,14 +139,14 @@ func (g *Generic[T, D]) FindPagination(query interface{}, limit int64, page int)
 
 	if err != nil {
 		logService.Error(err.Error())
-		panic(err)
+		return nil, err
 	}
 
 	err = cursor.All(context.TODO(), &models)
 
 	if err != nil {
 		logService.Error(err.Error())
-		panic(err)
+		return nil, err
 	}
 	var resultsDomain []D
 
@@ -228,6 +227,7 @@ func (g *Generic[T, D]) UpdateById(id string, data interface{}) (*D, error) {
 
 	if err != nil {
 		logService.Error(err.Error())
+    return nil, err
 	}
 
 	dataDomain, _ := g.FindById(idConverted.Hex())

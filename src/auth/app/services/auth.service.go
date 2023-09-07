@@ -200,7 +200,10 @@ func (s *Service) RestorePassword(tokenString string, body *authDTO.RestorePassw
 
 	body.Password = string(bytes)
 
-	s.repo.UpdateById(tokenDecoded.Id, &usersDomain.User{Password: body.Password})
+	userUpdate := usersDomain.User{Password: body.Password}
+
+	// s.repo.UpdateById(tokenDecoded.Id, &usersDomain.User{Password: body.Password})
+	s.repo.UpdateById(tokenDecoded.Id, userUpdate)
 
 	return resService.Ok(msgDomain.Msg.SUCCESS_PASSWORD_UPDATED)
 }

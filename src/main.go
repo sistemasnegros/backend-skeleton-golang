@@ -3,6 +3,7 @@ package main
 import (
 	authService "backend-skeleton-golang/auth/app/services"
 	authControllers "backend-skeleton-golang/auth/infra/controllers"
+	logService "backend-skeleton-golang/commons/app/services/log-service"
 	smtpService "backend-skeleton-golang/commons/app/services/smtp-service"
 	msgDomain "backend-skeleton-golang/commons/domain/msg"
 	fiberInfra "backend-skeleton-golang/commons/infra/fiber/fiber"
@@ -19,6 +20,7 @@ import (
 	usersRepoMongo "backend-skeleton-golang/users/infra/mongodb/repo"
 	"context"
 
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/fx"
 )
 
@@ -62,7 +64,7 @@ func main() {
 	app.Run()
 }
 
-func start(lc fx.Lifecycle, api *fiberInfra.API) {
+func start(lc fx.Lifecycle, api *fiberInfra.API, client *mongo.Client) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 
@@ -71,6 +73,10 @@ func start(lc fx.Lifecycle, api *fiberInfra.API) {
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
+			if err := client.Disconnect(ctx); err != nil {
+				panic(err)
+			}
+			logService.Info("mongodb Disconnect........")
 			return nil
 		},
 	})

@@ -31,7 +31,7 @@ func (controller Controller) LoadRouter(router fiber.Router) {
 	auth.Post("/register", controller.Register)
 	auth.Post("/login", controller.Login)
 	auth.Post("/forgot-password", controller.ForgotPassword)
-	auth.Put("/restore-password/:token", controller.RestorePassword)
+	auth.Patch("/restore-password/:token", controller.RestorePassword)
 
 	auth.Get("/me", controller.middleware.Protected(), controller.GetMe)
 	auth.Patch("/me", controller.middleware.Protected(), controller.UpdateMe)

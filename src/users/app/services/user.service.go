@@ -63,6 +63,7 @@ func (s *Service) Create(body *usersDTO.Create) (int, interface{}) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(body.Password), 14)
 	if err != nil {
 		logService.Error(err.Error())
+		return resService.InternalServerError(msgDomain.Msg.ERR_SAVING_IN_DATABASE)
 	}
 	body.Password = string(bytes)
 	userDomain := usersDomain.User{}
@@ -96,7 +97,6 @@ func (s *Service) UpdateById(id string, body *usersDTO.Update) (int, interface{}
 	copier.Copy(&userDomain, &body)
 	user, err := s.repo.UpdateById(id, userDomain)
 	if err != nil {
-		logService.Error(err.Error())
 		return resService.InternalServerError(msgDomain.Msg.ERR_SAVING_IN_DATABASE)
 	}
 	userRes := usersDTO.UserRes{}

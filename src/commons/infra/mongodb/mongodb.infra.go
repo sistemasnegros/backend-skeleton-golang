@@ -5,24 +5,24 @@ import (
 	logService "backend-skeleton-golang/commons/app/services/log-service"
 	"context"
 	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func New() *mongo.Database {
+func New() (*mongo.Database, *mongo.Client) {
 	ServerAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(configService.GetMongoDb()).SetServerAPIOptions(ServerAPI)
+
+	// opts.SetConnectTimeout(time.Second * 1)
+  opts.SetTimeout(time.Second * 1)
+  // opts.SetSocketTimeout(time.Second * 1)
+
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
-		panic("Err connecting mongodb")
+		panic("err connecting mongodb")
 	}
-
-	// defer func() {
-	// 	if err = client.Disconnect(context.TODO()); err != nil {
-	// 		panic(err)
-	// 	}
-	// }()
 
 	logService.Info("successfully connection mongodb!")
 
@@ -30,5 +30,5 @@ func New() *mongo.Database {
 	databaseCuted = strings.Split(databaseCuted[len(databaseCuted)-1], "?")
 	database := databaseCuted[0]
 
-	return client.Database(database)
+	return client.Database(database), client
 }

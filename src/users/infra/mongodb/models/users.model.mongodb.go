@@ -15,4 +15,3 @@ type User struct {
 	CreatedAt time.Time          `bson:"createAt"`
 	UpdatedAt time.Time          `bson:"updateAt"`
 }
-

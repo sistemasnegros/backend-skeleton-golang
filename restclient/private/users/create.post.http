@@ -1,0 +1,12 @@
+POST {{URL}}/users
+content-type: application/json
+Authorization: Bearer {{TOKEN}}
+
+{
+    "id": "640a64642a0d9fdf0452fc82",
+    "email": "usertest2@yopmail.com",
+    "password": "123456",
+    "firstName": "user 2",
+    "lastName": "test 2"
+}
+

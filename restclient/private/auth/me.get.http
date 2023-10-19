@@ -1,0 +1,3 @@
+GET {{URL}}/auth/me
+content-type: application/json
+Authorization: Bearer {{TOKEN}}

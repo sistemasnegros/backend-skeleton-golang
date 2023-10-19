@@ -1,0 +1,3 @@
+GET {{URL}}/users/640a64642a0d9fdf0452fc82
+content-type: application/json
+Authorization: Bearer {{TOKEN}}

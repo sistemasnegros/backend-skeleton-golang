@@ -1,0 +1,13 @@
+POST {{URL}}/auth/login
+content-type: application/json
+
+{
+    "email": "usertest1@yopmail.com",
+    "password": "123456"   
+}
+
+
+
+
+
+
